@@ -95,4 +95,13 @@ void cpu_run(struct cpu *cpu)
 void cpu_init(struct cpu *cpu)
 {
   // TODO: Initialize the PC and other special registers
+  // Assign 0X00 to the value of PC in struct cpu
+  cpu->PC = 0x00;
+
+  // Use memset to fill a block of memory
+  // in registers, with a value initially set to 0, in a block of memory that is the size of the registers inside struct cpu
+  memset(cpu->registers, 0, sizeof(cpu->registers));
+  // Use memset to fill a block of memory
+  // in ram, with a value initially set 0, in a block of memory that is the size of the ram inside struct cpu
+  memset(cpu->ram, 0, sizeof(cpu->ram));
 }
