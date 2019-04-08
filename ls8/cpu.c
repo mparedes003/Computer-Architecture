@@ -1,5 +1,7 @@
 #include "cpu.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define DATA_LEN 6
 
@@ -64,6 +66,7 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
   {
   case ALU_MUL:
     // TODO
+    cpu->registers[regA] = cpu->registers[regA] * cpu->registers[regB];
     break;
 
     // TODO: implement more ALU ops
@@ -81,11 +84,54 @@ void cpu_run(struct cpu *cpu)
   {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
+
+    // Reads the memory address that is stored in register PC
+    // and stores that result in current_instruction == IR, the Instruction Register
+    unsigned char current_instruction = cpu_ram_read(cpu, cpu->PC);
+
     // 2. Figure out how many operands this next instruction requires
+    unsigned int num_operands = current_instruction >> 6;
+
     // 3. Get the appropriate value(s) of the operands following this instruction
+
+    // Uses cpu_ram_read(), to read the bytes at cpu->PC+1 and cpu->PC+2 from RAM
+    // into variables operandA and operandB in case the instruction needs them
+    unsigned operandA = cpu_ram_read(cpu, (cpu->PC + 1));
+    unsigned operandB = cpu_ram_read(cpu, (cpu->PC + 2));
+
+    // 6. Move the PC to the next instruction.
+    int shift = (num_operands) + 1;
+
     // 4. switch() over it to decide on a course of action.
     // 5. Do whatever the instruction should do according to the spec.
-    // 6. Move the PC to the next instruction.
+    switch (current_instruction)
+    {
+
+    // LDI
+    // Sets a specified register to a specified value
+    // Takes 2 arguments: 'register' and 'immediate'
+    // Sets the next instruction to the instruction 2 steps ahead
+    case LDI:
+      cpu->registers[operandA] = operandB;
+      cpu->PC += shift;
+      break;
+
+    // PRN
+    // Prints a numeric value stored in the given register
+    case PRN:
+      printf("%d \n", cpu->registers[operandA]);
+      cpu->PC += shift;
+      break;
+
+    // HLT
+    // Halts/Stops the CPU and exits the emulator
+    case HLT:
+      running = 0; // Stops the 'while (running)' loop
+      break;
+
+    default:
+      break;
+    }
   }
 }
 
