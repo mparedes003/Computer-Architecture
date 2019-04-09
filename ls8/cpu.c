@@ -4,6 +4,9 @@
 #include <stdlib.h>
 
 #define DATA_LEN 6
+#define SP 7
+
+unsigned int ram_address = 0;
 
 // Add functions cpu_ram_read() and cpu_ram_write()
 // that access the RAM inside the struct cpu
@@ -35,26 +38,61 @@ void cpu_ram_write(struct cpu *cpu, unsigned char index, unsigned char value)
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
-void cpu_load(struct cpu *cpu)
+// void cpu_load(struct cpu *cpu)
+void cpu_load(struct cpu *cpu, char *argv[])
 {
-  char data[DATA_LEN] = {
-      // From print8.ls8
-      0b10000010, // LDI R0,8
-      0b00000000,
-      0b00001000,
-      0b01000111, // PRN R0
-      0b00000000,
-      0b00000001 // HLT
-  };
+  // char data[DATA_LEN] = {
+  //     // From print8.ls8
+  //     0b10000010, // LDI R0,8
+  //     0b00000000,
+  //     0b00001000,
+  //     0b01000111, // PRN R0
+  //     0b00000000,
+  //     0b00000001 // HLT
+  // };
 
-  int address = 0;
+  // int address = 0;
 
-  for (int i = 0; i < DATA_LEN; i++)
-  {
-    cpu->ram[address++] = data[i];
-  }
+  // for (int i = 0; i < DATA_LEN; i++)
+  // {
+  //   cpu->ram[address++] = data[i];
+  // }
 
   // TODO: Replace this with something less hard-coded
+  FILE *fp;
+  // open file for reading
+  fp = fopen(argv[1], "r");
+  char line[1024];
+
+  // If file doesn't open or doesn't exist
+  if (fp == NULL)
+  {
+    fprintf(stderr, "File %s cannot be opened or does not exist. \n", argv[1]);
+    exit(1);
+  }
+
+  // fgets returns line
+  // Chars are read from file fp and stored in line
+  // Max num of chars read == sizeof(line)
+  while (fgets(line, sizeof(line), fp) != NULL)
+  {
+    // *endptr
+    char *converted_line;
+
+    // Converts line from binary string to integer value
+    // Unsigned long int strtoul(const char *str, char **endptr, int base)
+    unsigned char byte = strtoul(line, &converted_line, 2);
+
+    if (converted_line == line)
+    {
+      // fprintf("Skipping: %s", line);
+      continue;
+    }
+
+    cpu->ram[ram_address++] = byte;
+  }
+
+  fclose(fp);
 }
 
 /**
@@ -68,6 +106,9 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     // TODO
     cpu->registers[regA] = cpu->registers[regA] * cpu->registers[regB];
     break;
+
+    // default:
+    //   break;
 
     // TODO: implement more ALU ops
   }
@@ -127,6 +168,30 @@ void cpu_run(struct cpu *cpu)
     // Halts/Stops the CPU and exits the emulator
     case HLT:
       running = 0; // Stops the 'while (running)' loop
+      break;
+
+    case MUL:
+      alu(cpu, ALU_MUL, operandA, operandB);
+      cpu->PC += shift;
+      break;
+
+    case POP:
+      cpu->registers[operandA] = cpu_ram_read(cpu, cpu->registers[SP]++);
+      if (cpu->registers[SP] > 255)
+      {
+        cpu->registers[SP] = 0xF4;
+      }
+      cpu->PC += shift;
+      break;
+
+    case PUSH:
+      if (--cpu->registers[SP] <= ram_address)
+      {
+        fprintf(stderr, "Warning: Stack overflow.\n");
+        exit(1);
+      }
+      cpu_ram_write(cpu, cpu->registers[SP], cpu->registers[operandA]);
+      cpu->PC += shift;
       break;
 
     default:
