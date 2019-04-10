@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #define DATA_LEN 6
+// The Stack Pointer
 #define SP 7
 
 unsigned int ram_address = 0;
@@ -107,10 +108,13 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     cpu->registers[regA] = cpu->registers[regA] * cpu->registers[regB];
     break;
 
-    // default:
-    //   break;
+  // TODO: implement more ALU ops
+  case ALU_ADD:
+    cpu->registers[regA] = cpu->registers[regA] + cpu->registers[regB];
+    break;
 
-    // TODO: implement more ALU ops
+  default:
+    break;
   }
 }
 
@@ -175,6 +179,11 @@ void cpu_run(struct cpu *cpu)
       cpu->PC += shift;
       break;
 
+    case ADD:
+      alu(cpu, ALU_ADD, operandA, operandB);
+      cpu->PC += shift;
+      break;
+
     case POP:
       cpu->registers[operandA] = cpu_ram_read(cpu, cpu->registers[SP]++);
       if (cpu->registers[SP] > 255)
@@ -192,6 +201,18 @@ void cpu_run(struct cpu *cpu)
       }
       cpu_ram_write(cpu, cpu->registers[SP], cpu->registers[operandA]);
       cpu->PC += shift;
+      break;
+
+    case CALL:
+      // Decrement the value stored at registers[SP] by 2
+      cpu->registers[SP]--;
+      cpu_ram_write(cpu, cpu->registers[SP], cpu->PC + 2);
+      cpu->PC = cpu->registers[operandA];
+      break;
+
+    case RET:
+      cpu->PC = cpu_ram_read(cpu, cpu->registers[SP]);
+      cpu->registers[SP]++;
       break;
 
     default:
@@ -215,4 +236,9 @@ void cpu_init(struct cpu *cpu)
   // Use memset to fill a block of memory
   // in ram, with a value initially set 0, in a block of memory that is the size of the ram inside struct cpu
   memset(cpu->ram, 0, sizeof(cpu->ram));
+
+  // The stack pointer is always stored in the register at reg[SP]
+  // upon init, its value is set to number 0xF4 which corresponds to an index in ram[]
+  // the stack should start at the top of memory at a high address and get larger downward as things are pushed on
+  cpu->registers[SP] = 0xF4;
 }
