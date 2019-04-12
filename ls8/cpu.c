@@ -113,6 +113,35 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     cpu->registers[regA] = cpu->registers[regA] + cpu->registers[regB];
     break;
 
+  case ALU_CMP:
+    if (cpu->registers[regA] == cpu->registers[regB])
+    {
+      cpu->E = 1;
+    }
+    else
+    {
+      cpu->E = 0;
+    }
+
+    if (cpu->registers[regA] > cpu->registers[regB])
+    {
+      cpu->G = 1;
+    }
+    else
+    {
+      cpu->G = 0;
+    }
+
+    if (cpu->registers[regA] < cpu->registers[regB])
+    {
+      cpu->L = 1;
+    }
+    else
+    {
+      cpu->L = 0;
+    }
+    break;
+
   default:
     break;
   }
@@ -215,6 +244,11 @@ void cpu_run(struct cpu *cpu)
       cpu->registers[SP]++;
       break;
 
+    case CMP:
+      alu(cpu, ALU_CMP, operandA, operandB);
+      cpu->PC += shift;
+      break;
+
     default:
       break;
     }
@@ -241,4 +275,8 @@ void cpu_init(struct cpu *cpu)
   // upon init, its value is set to number 0xF4 which corresponds to an index in ram[]
   // the stack should start at the top of memory at a high address and get larger downward as things are pushed on
   cpu->registers[SP] = 0xF4;
+
+  cpu->E = 0;
+  cpu->G = 0;
+  cpu->L = 0;
 }
