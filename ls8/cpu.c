@@ -268,6 +268,19 @@ void cpu_run(struct cpu *cpu)
       }
       break;
 
+    case JNE:
+      // If E flag double equals 0 (false)
+      if (cpu->E == 0)
+      {
+        // Jump to the address stored in the given register
+        cpu->PC = cpu->registers[operandA];
+      }
+      else
+      {
+        cpu->PC += shift;
+      }
+      break;
+
     default:
       break;
     }
