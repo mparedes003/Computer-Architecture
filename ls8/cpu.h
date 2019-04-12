@@ -13,6 +13,14 @@ struct cpu
   unsigned char ram[256]; // has total of 256 bytes of memory
   // Stack Pointer
   unsigned int SP;
+
+  // Flags
+  // Equal: during a CMP, set to 1 if registerA is equal to registerB, zero otherwise.
+  unsigned char E;
+  // Greater-than: during a CMP, set to 1 if registerA is greater than registerB, zero otherwise.
+  unsigned char G;
+  // Less-than: during a CMP, set to 1 if registerA is less than registerB, zero otherwise.
+  unsigned char L;
 };
 
 // ALU operations
