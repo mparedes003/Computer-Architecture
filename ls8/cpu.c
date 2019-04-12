@@ -114,8 +114,10 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     break;
 
   case ALU_CMP:
+    // If registerA is equal to registerB
     if (cpu->registers[regA] == cpu->registers[regB])
     {
+      // Set to 1 if registerA is equal to registerB
       cpu->E = 1;
     }
     else
@@ -123,8 +125,10 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       cpu->E = 0;
     }
 
+    // If registerA is greater than registerB
     if (cpu->registers[regA] > cpu->registers[regB])
     {
+      // Set to 1
       cpu->G = 1;
     }
     else
@@ -132,8 +136,10 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       cpu->G = 0;
     }
 
+    // If registerA is less than registerB
     if (cpu->registers[regA] < cpu->registers[regB])
     {
+      // Set to 1
       cpu->L = 1;
     }
     else
