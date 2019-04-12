@@ -255,6 +255,19 @@ void cpu_run(struct cpu *cpu)
       cpu->PC += shift;
       break;
 
+    case JEQ:
+      // If equal flag double equals 1 (is set to true)
+      if (cpu->E == 1)
+      {
+        // Jump to the address stored in the given register
+        cpu->PC = cpu->registers[operandA];
+      }
+      else
+      {
+        cpu->PC += shift;
+      }
+      break;
+
     default:
       break;
     }
