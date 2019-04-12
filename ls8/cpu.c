@@ -281,6 +281,12 @@ void cpu_run(struct cpu *cpu)
       }
       break;
 
+    // Jump to the address stored in the given register
+    case JMP:
+      // Set the cpu->PC to the address stored in the given register
+      cpu->PC = cpu->registers[operandA];
+      break;
+
     default:
       break;
     }
